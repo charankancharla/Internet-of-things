@@ -1,0 +1,42 @@
+import time
+from gpiozero import MotionSensor, LED
+import requests
+
+# Constants
+MOTION_PIN = 4  # GPIO pin connected to the motion sensor
+LIGHT_PIN = 17  # GPIO pin connected to the LED light
+API_ENDPOINT = 'http://your-api-endpoint'  # Replace with your API endpoint
+
+# Initialize motion sensor and LED
+motion_sensor = MotionSensor(MOTION_PIN)
+led_light = LED(LIGHT_PIN)
+
+def turn_on_light():
+    led_light.on()
+    print("Light turned on")
+
+def turn_off_light():
+    led_light.off()
+    print("Light turned off")
+
+def send_data(status):
+    data = {'status': status}
+    try:
+        response = requests.post(API_ENDPOINT, json=data)
+        if response.status_code == 200:
+            print("Data sent successfully")
+        else:
+            print("Failed to send data")
+    except requests.exceptions.RequestException as e:
+        print("Error:", e)
+
+# Main loop
+while True:
+    if motion_sensor.motion_detected:
+        turn_on_light()
+        send_data('on')
+        time.sleep(5)  # Light stays on for 5 seconds
+    else:
+        turn_off_light()
+        send_data('off')
+        time.sleep(0.1)  # Check for motion every 0.1 second
